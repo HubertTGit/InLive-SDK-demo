@@ -43,6 +43,7 @@ export const createRoom = async (
 // create peer and stream function
 export const createPeerAndAndStream = async (
   roomId: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<{ mediaStream: MediaStream; peer: any; clientId: string }> => {
   const generatedClientId = uuidv4();
 

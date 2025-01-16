@@ -7,7 +7,6 @@ import {
   createRoom,
   room,
 } from '@/lib/peer-connection';
-import { Input } from './ui/input';
 import { RoomEvent } from '@inlivedev/inlive-js-sdk';
 import UserVideo from './user-video';
 import { TelephoneCall, TelephoneSlash } from '@mynaui/icons-react';
@@ -33,6 +32,7 @@ export const GroupCallCmp = ({ roomId }: VideoConferenceProps) => {
     hasJoined: false,
     firstTime: true,
   });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [peer, setPeer] = useState<any>();
 
   const createRoomHandler = useCallback(async () => {
