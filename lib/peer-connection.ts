@@ -14,22 +14,36 @@ export const authentication = async () => {
   room.setAuth(auth);
 };
 
-export const createRoom = async (): Promise<{ id: string; name: string }> => {
-  const roomId = uuidv4();
-
+//create room function
+export const createRoom = async (
+  roomId: string
+): Promise<{ id: string; name: string }> => {
   await authentication();
-  const createdRoom = await room.createRoom(roomId);
+
+  const existingRoom = await room.getRoom(roomId);
 
   const {
+    ok,
     data: { id, name },
-  } = createdRoom;
+  } = existingRoom;
 
-  return { id, name };
+  if (ok) {
+    return { id, name };
+  } else {
+    const createdRoom = await room.createRoom(`Conference-${roomId}`, roomId);
+
+    const {
+      data: { id, name },
+    } = createdRoom;
+
+    return { id, name };
+  }
 };
 
+// create peer and stream function
 export const createPeerAndAndStream = async (
   roomId: string
-): Promise<{ mediaStream: MediaStream; peer: any }> => {
+): Promise<{ mediaStream: MediaStream; peer: any; clientId: string }> => {
   const generatedClientId = uuidv4();
 
   await authentication();
@@ -62,5 +76,5 @@ export const createPeerAndAndStream = async (
 
   await peer.connect(id, clientId);
 
-  return { mediaStream, peer };
+  return { mediaStream, peer, clientId };
 };
