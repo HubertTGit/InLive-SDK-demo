@@ -8,7 +8,8 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { createPeer, createRoom, Peer, room } from './peer-connection';
+import { createPeer, Peer, room } from './peer-connection';
+import { useRoom } from './room.context';
 
 type ChatMessage = {
   messages: string[];
@@ -28,21 +29,21 @@ const ChatContext = createContext<ChatMessage>(defaultValue);
 
 type ChatProviderProps = {
   children: ReactNode;
-  roomId: string;
 };
 
 export const useChat = () => {
   return useContext(ChatContext);
 };
 
-export const ChatProvider = ({ children, roomId }: ChatProviderProps) => {
+export const ChatProvider = ({ children }: ChatProviderProps) => {
   const [messages, setMessages] = useState<string[]>([]);
   const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
   const [_peer, setPeer] = useState<Peer | null>(null);
   const [init, setInit] = useState<boolean>(false);
+  const { roomId } = useRoom();
 
   const addRoomHandler = useCallback(async () => {
-    await createRoom(roomId);
+    if (!roomId) return;
     const created = await room.createDataChannel(roomId, 'chat');
 
     if (created.ok) {
@@ -53,6 +54,7 @@ export const ChatProvider = ({ children, roomId }: ChatProviderProps) => {
   }, [roomId]);
 
   const initPeerHandler = useCallback(async () => {
+    if (!roomId) return;
     const { peer } = await createPeer(roomId);
     setPeer(peer);
   }, [roomId]);
@@ -84,6 +86,8 @@ export const ChatProvider = ({ children, roomId }: ChatProviderProps) => {
     const peerConnection = _peer?.getPeerConnection() || null;
 
     if (!peerConnection) return;
+
+    console.log('peer connection', peerConnection);
 
     peerConnection.addEventListener('datachannel', dataChannelHandler);
 

@@ -1,15 +1,9 @@
 import GroupCallCmp from '@/components/video-conference';
 
-export default async function ConferenceCallRoom({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-
+export default async function ConferenceCallRoom() {
   return (
     <>
-      <GroupCallCmp roomId={id} />
+      <GroupCallCmp />
     </>
   );
 }

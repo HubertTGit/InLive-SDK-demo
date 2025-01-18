@@ -1,4 +1,5 @@
 import { ChatProvider } from '@/lib/chat.context';
+import { RoomProvider } from '@/lib/room.context';
 import { ReactNode } from 'react';
 
 type ChatLayoutProps = {
@@ -11,5 +12,10 @@ export default async function ChatLayout({
   params,
 }: ChatLayoutProps) {
   const { id } = await params;
-  return <ChatProvider roomId={id}>{children}</ChatProvider>;
+
+  return (
+    <RoomProvider neededId={id}>
+      <ChatProvider roomId={id}>{children}</ChatProvider>
+    </RoomProvider>
+  );
 }
