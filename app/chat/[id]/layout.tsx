@@ -15,7 +15,7 @@ export default async function ChatLayout({
 
   return (
     <RoomProvider neededId={id}>
-      <ChatProvider roomId={id}>{children}</ChatProvider>
+      <ChatProvider>{children}</ChatProvider>
     </RoomProvider>
   );
 }

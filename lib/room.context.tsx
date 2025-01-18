@@ -10,11 +10,11 @@ import {
 import { createAuth, Room } from '@inlivedev/inlive-js-sdk';
 
 type RoomInit = {
-  roomId: string | null;
+  roomId: string;
 };
 
 const defaultValue: RoomInit = {
-  roomId: null,
+  roomId: '',
 };
 
 const RoomContext = createContext<RoomInit>(defaultValue);
@@ -69,7 +69,7 @@ export const createRoomHandler = async (
 };
 
 export const RoomProvider = ({ children, neededId: id }: RoomProviderProps) => {
-  const [roomId, setRoomId] = useState<string | null>(null);
+  const [roomId, setRoomId] = useState<string>('');
 
   useEffect(() => {
     if (!id) return;

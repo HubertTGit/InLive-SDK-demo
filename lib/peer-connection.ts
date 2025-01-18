@@ -16,44 +16,6 @@ export const authentication = async () => {
 };
 
 // create peer and stream function
-export const createPeerAndAndStream = async (
-  roomId: string
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<{ mediaStream: MediaStream; peer: any; clientId: string }> => {
-  const generatedClientId = uuidv4();
-
-  await authentication();
-
-  const getRoom = await room.getRoom(roomId);
-  const {
-    data: { id },
-  } = getRoom;
-  const client = await room.createClient(getRoom.data.id, {
-    clientName: `client_${generatedClientId}`,
-  });
-
-  const {
-    data: { clientId, clientName },
-  } = client;
-  const mediaStream = await navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: true,
-  });
-
-  const peer = await room.createPeer(id, clientId);
-
-  peer.addStream(mediaStream.id, {
-    clientId,
-    name: clientName,
-    origin: 'local',
-    source: 'media',
-    mediaStream: mediaStream,
-  });
-
-  await peer.connect(id, clientId);
-
-  return { mediaStream, peer, clientId };
-};
 
 export const createPeer = async (
   roomId: string
