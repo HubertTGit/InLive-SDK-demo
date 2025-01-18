@@ -1,9 +1,9 @@
-import GroupCallCmp from '@/components/video-conference';
+import CallApp from '@/components/call-app';
 
 export default async function ConferenceCallRoom() {
   return (
     <>
-      <GroupCallCmp />
+      <CallApp />
     </>
   );
 }
