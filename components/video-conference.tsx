@@ -5,7 +5,7 @@ import { Button } from './ui/button';
 import { RoomEvent } from '@inlivedev/inlive-js-sdk';
 import UserVideo from './user-video';
 import { TelephoneCall, TelephoneSlash } from '@mynaui/icons-react';
-import { app, useRoom } from '@/lib/room.context';
+import { app, usePeer } from '@/lib/peer.context';
 import { useVideo } from '@/lib/video.context';
 
 type Join = {
@@ -26,7 +26,7 @@ export const GroupCallCmp = () => {
     firstTime: true,
   });
 
-  const { roomId } = useRoom();
+  const { roomId } = usePeer();
   const { peer, mediaStream, clientId, join, leave } = useVideo();
 
   //create room on component mount

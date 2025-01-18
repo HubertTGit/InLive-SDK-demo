@@ -8,13 +8,18 @@ import {
   useState,
 } from 'react';
 import { createAuth, Room } from '@inlivedev/inlive-js-sdk';
+import { v4 as uuidv4 } from 'uuid';
 
 type RoomInit = {
   roomId: string;
+  clientId: string;
+  clientName: string;
 };
 
 const defaultValue: RoomInit = {
   roomId: '',
+  clientId: '',
+  clientName: '',
 };
 
 const RoomContext = createContext<RoomInit>(defaultValue);
@@ -22,12 +27,12 @@ const RoomContext = createContext<RoomInit>(defaultValue);
 export const app = Room();
 export type Peer = Awaited<ReturnType<typeof app.createPeer>>;
 
-type RoomProviderProps = {
+type PeerProviderProps = {
   children: ReactNode;
-  neededId: string;
+  roomId: string;
 };
 
-export const useRoom = () => {
+export const usePeer = () => {
   return useContext(RoomContext);
 };
 
@@ -68,15 +73,35 @@ export const createRoomHandler = async (
   }
 };
 
-export const RoomProvider = ({ children, neededId: id }: RoomProviderProps) => {
+export const PeerAppProvider = ({
+  children,
+  roomId: id,
+}: PeerProviderProps) => {
   const [roomId, setRoomId] = useState<string>('');
+  const [clientId, setClientId] = useState<string>('');
+  const [clientName, setClientName] = useState<string>('');
 
   useEffect(() => {
     if (!id) return;
 
+    const createClientHandler = async (roomId: string) => {
+      const _clientId = uuidv4();
+
+      const _createdClient = await app.createClient(roomId, {
+        clientName: `client_${_clientId}`,
+      });
+
+      const clientId = _createdClient.data.clientId;
+      const clientName = _createdClient.data.clientName;
+
+      setClientId(clientId);
+      setClientName(clientName);
+    };
+
     const init = async () => {
       await authentication();
       const created = await createRoomHandler(id);
+      await createClientHandler(created.id);
 
       setRoomId(created.id);
     };
@@ -84,6 +109,8 @@ export const RoomProvider = ({ children, neededId: id }: RoomProviderProps) => {
   }, [id]);
 
   return (
-    <RoomContext.Provider value={{ roomId }}>{children}</RoomContext.Provider>
+    <RoomContext.Provider value={{ roomId, clientId, clientName }}>
+      {children}
+    </RoomContext.Provider>
   );
 };

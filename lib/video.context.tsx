@@ -5,12 +5,10 @@ import {
   ReactNode,
   useCallback,
   useContext,
-  useEffect,
   useState,
 } from 'react';
 import { Peer } from './peer-connection';
-import { v4 as uuidv4 } from 'uuid';
-import { app, useRoom } from './room.context';
+import { app, usePeer } from './peer.context';
 
 type VideoContext = {
   mediaStream: MediaStream | null;
@@ -41,9 +39,7 @@ export const useVideo = () => {
 export const VideoProvider = ({ children }: VideoProviderProps) => {
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [peer, setPeer] = useState<Peer | null>(null);
-  const [clientId, setClientId] = useState<string>('');
-  const [clientName, setClientName] = useState<string>('');
-  const { roomId } = useRoom();
+  const { roomId, clientId, clientName } = usePeer();
 
   const join = useCallback(async () => {
     if (!roomId && !clientId && !clientName) return;
@@ -75,26 +71,6 @@ export const VideoProvider = ({ children }: VideoProviderProps) => {
 
     peer?.disconnect();
   }, [peer, roomId]);
-
-  useEffect(() => {
-    const createPeerAndAndStream = async (roomId: string | null) => {
-      if (!roomId) return;
-
-      const _clientId = uuidv4();
-
-      const _createdClient = await app.createClient(roomId, {
-        clientName: `client_${_clientId}`,
-      });
-
-      const clientId = _createdClient.data.clientId;
-      const clientName = _createdClient.data.clientName;
-
-      setClientId(clientId);
-      setClientName(clientName);
-    };
-
-    createPeerAndAndStream(roomId);
-  }, [roomId]);
 
   return (
     <VideoContext.Provider value={{ peer, mediaStream, clientId, join, leave }}>
