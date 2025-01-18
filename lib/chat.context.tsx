@@ -9,7 +9,7 @@ import {
   useState,
 } from 'react';
 import { createPeer, Peer, room } from './peer-connection';
-import { useRoom } from './room.context';
+import { usePeer } from './peer.context';
 
 type ChatMessage = {
   messages: string[];
@@ -40,7 +40,7 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
   const [_peer, setPeer] = useState<Peer | null>(null);
   const [init, setInit] = useState<boolean>(false);
-  const { roomId } = useRoom();
+  const { roomId } = usePeer();
 
   const addRoomHandler = useCallback(async () => {
     if (!roomId) return;

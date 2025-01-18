@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
-import { createPeerAndAndStream, Peer, room } from '@/lib/peer-connection';
 import { RoomEvent } from '@inlivedev/inlive-js-sdk';
 import UserVideo from './user-video';
 import { TelephoneCall, TelephoneSlash } from '@mynaui/icons-react';
-import { useRoom } from '@/lib/room.context';
+import { app, usePeer } from '@/lib/peer.context';
+import { useVideo } from '@/lib/video.context';
 
 type Join = {
   hasJoined: boolean;
@@ -20,23 +20,19 @@ type UserVideo = {
 
 export const GroupCallCmp = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [clientId, setClientId] = useState<string>();
   const [userVideos, setUserVideos] = useState<UserVideo[]>([]);
   const [joined, setJoined] = useState<Join>({
     hasJoined: false,
     firstTime: true,
   });
 
-  const { roomId } = useRoom();
-
-  const [peer, setPeer] = useState<Peer>();
+  const { roomId } = usePeer();
+  const { peer, mediaStream, clientId, join, leave } = useVideo();
 
   //create room on component mount
   useEffect(() => {
-    if (!roomId) return;
-
     //listen for stream available event
-    room.on(RoomEvent.STREAM_AVAILABLE, (data) => {
+    app.on(RoomEvent.STREAM_AVAILABLE, (data) => {
       //only show remote streams ignore local streams
       if (data.stream.origin === 'local') return;
 
@@ -46,40 +42,33 @@ export const GroupCallCmp = () => {
     });
 
     //listen for stream removed event
-    room.on(RoomEvent.STREAM_REMOVED, ({ stream }) => {
+    app.on(RoomEvent.STREAM_REMOVED, ({ stream }) => {
       setUserVideos((prev) =>
         prev.filter((prevStream) => prevStream.stream.id !== stream.id)
       );
     });
-  }, [roomId]);
-
-  const joinHandler = useCallback(async () => {
-    if (!roomId) return;
-
-    const joinConference = await createPeerAndAndStream(roomId);
-    const { mediaStream, clientId, peer } = joinConference;
-    setClientId(clientId);
-    if (videoRef.current) {
-      videoRef.current.srcObject = mediaStream;
-      setJoined({ hasJoined: true, firstTime: false });
-      setPeer(peer);
-    }
-  }, [roomId]);
+  }, []);
 
   const reconnectHandler = useCallback(async () => {
     if (!peer && !roomId) return;
     await peer?.connect(roomId!, clientId!);
-  }, [roomId, clientId, peer]);
+  }, [roomId, peer, clientId]);
 
-  const leaveHandler = useCallback(async () => {
+  const leaveHandler = useCallback(() => {
     if (videoRef.current && clientId && peer) {
+      leave();
       videoRef.current.srcObject = null;
       setUserVideos([]);
-      //await room.leaveRoom(insertedRoomId, clientId);
-      peer.disconnect();
       setJoined({ hasJoined: false, firstTime: false });
     }
-  }, [peer, clientId]);
+  }, [clientId, leave, peer]);
+
+  useEffect(() => {
+    if (mediaStream) {
+      videoRef.current!.srcObject = mediaStream;
+      setJoined({ hasJoined: true, firstTime: false });
+    }
+  }, [mediaStream]);
 
   return (
     <>
@@ -114,7 +103,9 @@ export const GroupCallCmp = () => {
               Leave <TelephoneSlash />
             </Button>
           ) : (
-            <Button onClick={joined.firstTime ? joinHandler : reconnectHandler}>
+            <Button
+              onClick={joined.firstTime ? () => join() : reconnectHandler}
+            >
               Call <TelephoneCall />
             </Button>
           )}
