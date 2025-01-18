@@ -14,7 +14,7 @@ export default function Home() {
           <Button>
             <Link href={`call/${randomId}`}>Group Call</Link> <TelephoneCall />
           </Button>
-          <Button disabled>
+          <Button>
             <Link href={`chat/${randomId}`}>Group Chat </Link>
             <ChatMessages />
           </Button>

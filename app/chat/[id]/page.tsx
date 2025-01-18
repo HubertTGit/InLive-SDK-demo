@@ -1,9 +1,9 @@
-export default async function ConferenceChatRoom({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+import ChatApp from '@/components/chat-app';
 
-  return <>{id}</>;
+export default async function ConferenceChatRoom() {
+  return (
+    <>
+      <ChatApp />
+    </>
+  );
 }
