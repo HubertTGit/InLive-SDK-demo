@@ -1,5 +1,5 @@
 import { PeerAppProvider } from '@/context/peer.context';
-import { VideoProvider } from '@/context/video.context';
+import { CallProvider } from '@/context/call.context';
 import { ReactNode } from 'react';
 
 type VideoLayoutProps = {
@@ -14,7 +14,7 @@ export default async function VideoLayout({
   const { id } = await params;
   return (
     <PeerAppProvider roomId={id}>
-      <VideoProvider>{children}</VideoProvider>
+      <CallProvider>{children}</CallProvider>
     </PeerAppProvider>
   );
 }

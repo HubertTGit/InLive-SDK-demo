@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { app, Peer, usePeer } from './peer.context';
 
-type VideoContext = {
+type CallContextType = {
   mediaStream: MediaStream | null;
   peer: Peer | null;
   clientId: string | undefined;
@@ -17,7 +17,7 @@ type VideoContext = {
   leave: () => void;
 };
 
-const defaultValue: VideoContext = {
+const defaultValue: CallContextType = {
   mediaStream: null,
   peer: null,
   clientId: undefined,
@@ -25,17 +25,17 @@ const defaultValue: VideoContext = {
   leave: () => {},
 };
 
-const VideoContext = createContext<VideoContext>(defaultValue);
+const CallContext = createContext<CallContextType>(defaultValue);
 
-type VideoProviderProps = {
+type CallProviderProps = {
   children: ReactNode;
 };
 
-export const useVideo = () => {
-  return useContext(VideoContext);
+export const useCall = () => {
+  return useContext(CallContext);
 };
 
-export const VideoProvider = ({ children }: VideoProviderProps) => {
+export const CallProvider = ({ children }: CallProviderProps) => {
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [peer, setPeer] = useState<Peer | null>(null);
   const { roomId, clientId, clientName } = usePeer();
@@ -72,8 +72,8 @@ export const VideoProvider = ({ children }: VideoProviderProps) => {
   }, [peer, roomId]);
 
   return (
-    <VideoContext.Provider value={{ peer, mediaStream, clientId, join, leave }}>
+    <CallContext.Provider value={{ peer, mediaStream, clientId, join, leave }}>
       {children}
-    </VideoContext.Provider>
+    </CallContext.Provider>
   );
 };
