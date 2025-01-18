@@ -68,19 +68,20 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   }, [peer]);
 
   const dataChannelHandler = useCallback((event: RTCDataChannelEvent) => {
-    console.log('data channel event', event);
     const dataChannel = event.channel;
 
     if (dataChannel.label === 'chat') {
-      dataChannel.addEventListener('message', (event) => {
-        const textDecoder = new TextDecoder();
-        const bufferData = event.data as ArrayBuffer;
-        const data = textDecoder.decode(bufferData);
-        const message: string = JSON.parse(data);
-        setMessages((prevData) => [...prevData, message]);
-      });
+      //set data channel
+      setDataChannel(dataChannel);
+      dataChannel.onmessage = (event) => {
+        if (event.data instanceof ArrayBuffer) {
+          const textDecoder = new TextDecoder();
+          const bufferData = event.data as ArrayBuffer;
+          const message = textDecoder.decode(bufferData);
+          setMessages((prevData) => [...prevData, message]);
+        }
+      };
     }
-    setDataChannel(dataChannel);
   }, []);
 
   useEffect(() => {
@@ -90,6 +91,9 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     if (!peerConnection) return;
 
     peerConnection.addEventListener('datachannel', dataChannelHandler);
+
+    //will add a transceiver with "recvonly" direction for  stream without media stream
+    peer.startViewOnly();
 
     return () => {
       peerConnection.removeEventListener('datachannel', dataChannelHandler);
@@ -104,7 +108,8 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     (message: string) => {
       setMessages((prev) => [...prev, message]);
       if (!dataChannel) return;
-      dataChannel.send(JSON.stringify(message));
+      console.log('sending message', message, dataChannel);
+      dataChannel.send(message);
     },
     [dataChannel]
   );
