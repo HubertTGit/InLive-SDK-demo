@@ -2,21 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
-import {
-  createPeerAndAndStream,
-  createRoom,
-  room,
-} from '@/lib/peer-connection';
+import { createPeerAndAndStream, Peer, room } from '@/lib/peer-connection';
 import { RoomEvent } from '@inlivedev/inlive-js-sdk';
 import UserVideo from './user-video';
 import { TelephoneCall, TelephoneSlash } from '@mynaui/icons-react';
+import { useRoom } from '@/lib/room.context';
 
 type Join = {
   hasJoined: boolean;
   firstTime: boolean;
-};
-type VideoConferenceProps = {
-  roomId: string;
 };
 
 type UserVideo = {
@@ -24,7 +18,7 @@ type UserVideo = {
   clientId: string;
 };
 
-export const GroupCallCmp = ({ roomId }: VideoConferenceProps) => {
+export const GroupCallCmp = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [clientId, setClientId] = useState<string>();
   const [userVideos, setUserVideos] = useState<UserVideo[]>([]);
@@ -32,17 +26,14 @@ export const GroupCallCmp = ({ roomId }: VideoConferenceProps) => {
     hasJoined: false,
     firstTime: true,
   });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [peer, setPeer] = useState<any>();
 
-  const createRoomHandler = useCallback(async () => {
-    await createRoom(roomId);
-  }, [roomId]);
+  const { roomId } = useRoom();
+
+  const [peer, setPeer] = useState<Peer>();
 
   //create room on component mount
   useEffect(() => {
-    //find or create a room
-    createRoomHandler();
+    if (!roomId) return;
 
     //listen for stream available event
     room.on(RoomEvent.STREAM_AVAILABLE, (data) => {
@@ -60,9 +51,11 @@ export const GroupCallCmp = ({ roomId }: VideoConferenceProps) => {
         prev.filter((prevStream) => prevStream.stream.id !== stream.id)
       );
     });
-  }, [createRoomHandler]);
+  }, [roomId]);
 
   const joinHandler = useCallback(async () => {
+    if (!roomId) return;
+
     const joinConference = await createPeerAndAndStream(roomId);
     const { mediaStream, clientId, peer } = joinConference;
     setClientId(clientId);
@@ -74,11 +67,12 @@ export const GroupCallCmp = ({ roomId }: VideoConferenceProps) => {
   }, [roomId]);
 
   const reconnectHandler = useCallback(async () => {
-    await peer.connect(roomId, clientId);
+    if (!peer && !roomId) return;
+    await peer?.connect(roomId!, clientId!);
   }, [roomId, clientId, peer]);
 
   const leaveHandler = useCallback(async () => {
-    if (videoRef.current && clientId) {
+    if (videoRef.current && clientId && peer) {
       videoRef.current.srcObject = null;
       setUserVideos([]);
       //await room.leaveRoom(insertedRoomId, clientId);

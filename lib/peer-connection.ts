@@ -15,35 +15,6 @@ export const authentication = async () => {
   room.setAuth(auth);
 };
 
-//create room function
-export const createRoom = async (
-  roomId: string
-): Promise<{ id: string; name: string }> => {
-  await authentication();
-
-  const existingRoom = await room.getRoom(roomId);
-
-  console.log('get new room', existingRoom);
-
-  const {
-    ok,
-    data: { id, name },
-  } = existingRoom;
-
-  if (ok) {
-    return { id, name };
-  } else {
-    const createdRoom = await room.createRoom(`Conference-${roomId}`, roomId);
-    console.log('new created room', createdRoom);
-
-    const {
-      data: { id, name },
-    } = createdRoom;
-
-    return { id, name };
-  }
-};
-
 // create peer and stream function
 export const createPeerAndAndStream = async (
   roomId: string
