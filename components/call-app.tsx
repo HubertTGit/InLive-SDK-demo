@@ -5,8 +5,8 @@ import { Button } from './ui/button';
 import { RoomEvent } from '@inlivedev/inlive-js-sdk';
 import UserVideo from './user-video';
 import { TelephoneCall, TelephoneSlash } from '@mynaui/icons-react';
-import { app, usePeer } from '@/lib/peer.context';
-import { useVideo } from '@/lib/video.context';
+import { app, usePeer } from '@/context/peer.context';
+import { useVideo } from '@/context/video.context';
 
 type Join = {
   hasJoined: boolean;
@@ -18,7 +18,7 @@ type UserVideo = {
   clientId: string;
 };
 
-export const GroupCallCmp = () => {
+export const CallApp = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [userVideos, setUserVideos] = useState<UserVideo[]>([]);
   const [joined, setJoined] = useState<Join>({
@@ -115,4 +115,4 @@ export const GroupCallCmp = () => {
   );
 };
 
-export default GroupCallCmp;
+export default CallApp;

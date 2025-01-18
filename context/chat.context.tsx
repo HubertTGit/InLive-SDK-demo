@@ -8,21 +8,22 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { createPeer, Peer, room } from './peer-connection';
-import { usePeer } from './peer.context';
+import { app, Peer, usePeer } from './peer.context';
 
 type ChatMessage = {
   messages: string[];
-  sendMessage: (message: string) => void;
-  dataChannel: RTCDataChannel | null;
-  initDataChannel: () => void;
+  sendMessages: (message: string) => void;
+  joinChat: () => void;
+  leaveChat: () => void;
+  peer: Peer | null;
 };
 
 const defaultValue: ChatMessage = {
   messages: [],
-  sendMessage: () => {},
-  dataChannel: null,
-  initDataChannel: () => {},
+  sendMessages: () => {},
+  joinChat: () => {},
+  leaveChat: () => {},
+  peer: null,
 };
 
 const ChatContext = createContext<ChatMessage>(defaultValue);
@@ -38,13 +39,12 @@ export const useChat = () => {
 export const ChatProvider = ({ children }: ChatProviderProps) => {
   const [messages, setMessages] = useState<string[]>([]);
   const [dataChannel, setDataChannel] = useState<RTCDataChannel | null>(null);
-  const [_peer, setPeer] = useState<Peer | null>(null);
-  const [init, setInit] = useState<boolean>(false);
-  const { roomId } = usePeer();
+  const [peer, setPeer] = useState<Peer | null>(null);
+  const { roomId, clientId } = usePeer();
 
-  const addRoomHandler = useCallback(async () => {
+  const addDataChannelHandler = useCallback(async () => {
     if (!roomId) return;
-    const created = await room.createDataChannel(roomId, 'chat');
+    const created = await app.createDataChannel(roomId, 'chat');
 
     if (created.ok) {
       console.log('data channel created');
@@ -53,22 +53,23 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     }
   }, [roomId]);
 
-  const initPeerHandler = useCallback(async () => {
+  const joinChat = useCallback(async () => {
     if (!roomId) return;
-    const { peer } = await createPeer(roomId);
-    setPeer(peer);
-  }, [roomId]);
+    const peer = await app.createPeer(roomId, clientId);
+    await peer.connect(roomId, clientId);
 
-  useEffect(() => {
-    if (!init) return;
-    initPeerHandler();
-  }, [init, initPeerHandler]);
+    setPeer(peer);
+  }, [roomId, clientId]);
+
+  const leaveChat = useCallback(() => {
+    if (!peer) return;
+    peer.disconnect();
+    setPeer(null);
+  }, [peer]);
 
   const dataChannelHandler = useCallback((event: RTCDataChannelEvent) => {
+    console.log('data channel event', event);
     const dataChannel = event.channel;
-    dataChannel.binaryType = 'arraybuffer';
-
-    console.log('data channel', dataChannel);
 
     if (dataChannel.label === 'chat') {
       dataChannel.addEventListener('message', (event) => {
@@ -83,34 +84,34 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   }, []);
 
   useEffect(() => {
-    const peerConnection = _peer?.getPeerConnection() || null;
+    if (!peer) return;
+    const peerConnection = peer.getPeerConnection();
 
     if (!peerConnection) return;
-
-    console.log('peer connection', peerConnection);
 
     peerConnection.addEventListener('datachannel', dataChannelHandler);
 
     return () => {
       peerConnection.removeEventListener('datachannel', dataChannelHandler);
     };
-  }, [_peer, dataChannelHandler, roomId]);
+  }, [peer, dataChannelHandler]);
 
   useEffect(() => {
-    addRoomHandler();
-  }, [addRoomHandler]);
+    addDataChannelHandler();
+  }, [addDataChannelHandler]);
 
-  const sendMessage = (message: string) => {
-    setMessages((prev) => [...prev, message]);
-  };
-
-  const initDataChannel = () => {
-    setInit(true);
-  };
+  const sendMessages = useCallback(
+    (message: string) => {
+      setMessages((prev) => [...prev, message]);
+      if (!dataChannel) return;
+      dataChannel.send(JSON.stringify(message));
+    },
+    [dataChannel]
+  );
 
   return (
     <ChatContext.Provider
-      value={{ messages, sendMessage, dataChannel, initDataChannel }}
+      value={{ messages, sendMessages, joinChat, leaveChat, peer }}
     >
       {children}
     </ChatContext.Provider>

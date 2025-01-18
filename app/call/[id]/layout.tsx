@@ -1,5 +1,5 @@
-import { PeerAppProvider } from '@/lib/peer.context';
-import { VideoProvider } from '@/lib/video.context';
+import { PeerAppProvider } from '@/context/peer.context';
+import { VideoProvider } from '@/context/video.context';
 import { ReactNode } from 'react';
 
 type VideoLayoutProps = {

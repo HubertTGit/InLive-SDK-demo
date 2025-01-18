@@ -1,5 +1,5 @@
-import { ChatProvider } from '@/lib/chat.context';
-import { PeerAppProvider } from '@/lib/peer.context';
+import { ChatProvider } from '@/context/chat.context';
+import { PeerAppProvider } from '@/context/peer.context';
 import { ReactNode } from 'react';
 
 type ChatLayoutProps = {

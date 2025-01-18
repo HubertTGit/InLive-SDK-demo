@@ -7,8 +7,7 @@ import {
   useContext,
   useState,
 } from 'react';
-import { Peer } from './peer-connection';
-import { app, usePeer } from './peer.context';
+import { app, Peer, usePeer } from './peer.context';
 
 type VideoContext = {
   mediaStream: MediaStream | null;
