@@ -27,34 +27,6 @@ type RoomProviderProps = {
   neededId: string;
 };
 
-export const createAppHandler = async (
-  roomId: string
-): Promise<{ id: string; name: string }> => {
-  await authentication();
-
-  const existingRoom = await app.getRoom(roomId);
-
-  console.log('get new room', existingRoom);
-
-  const {
-    ok,
-    data: { id, name },
-  } = existingRoom;
-
-  if (ok) {
-    return { id, name };
-  } else {
-    const createdRoom = await app.createRoom(`Conference-${roomId}`, roomId);
-    console.log('new created room', createdRoom);
-
-    const {
-      data: { id, name },
-    } = createdRoom;
-
-    return { id, name };
-  }
-};
-
 export const useRoom = () => {
   return useContext(RoomContext);
 };
