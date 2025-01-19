@@ -72,10 +72,10 @@ export const Multimedia = () => {
           </Button>
         )}
       </div>
-      <div>
+      <div className="flex gap-3">
         <div
           ref={containerRef}
-          style={{ height: '500px', width: '500px' }}
+          style={{ height: '300px', width: '300px' }}
         ></div>
 
         <div className="flex gap-3">
