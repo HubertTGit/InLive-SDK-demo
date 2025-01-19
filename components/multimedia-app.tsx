@@ -42,7 +42,7 @@ export const Multimedia = () => {
 
       const { mediaStream, clientId } = data.stream;
 
-      console.log('stream available', clientId);
+      console.log('stream available', mediaStream.getTracks());
 
       setUserVideos((prev) => [...prev, { stream: mediaStream, clientId }]);
     });

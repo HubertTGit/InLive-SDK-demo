@@ -58,15 +58,23 @@ export const MultimediaProvider = ({ children }: MultimediaProviderProps) => {
     async (graphic?: MediaStream) => {
       if (!roomId && !clientName && !graphic) return;
 
+      const media = await window.navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+
       const peer = await app.createPeer(roomId, clientId);
 
       if (graphic) {
-        peer.addStream(graphic.id, {
+        media.removeTrack(media.getVideoTracks()[0]);
+        media.addTrack(graphic.getVideoTracks()[0]);
+
+        peer.addStream(media.id, {
           clientId,
           name: clientName,
           origin: 'local',
           source: 'media',
-          mediaStream: graphic,
+          mediaStream: media,
         });
       }
 
@@ -115,9 +123,12 @@ export const MultimediaProvider = ({ children }: MultimediaProviderProps) => {
 
     if (!peerConnection) return;
 
+    const _conn = peer.getPeerConnection();
+
     peerConnection.addEventListener('datachannel', dataChannelHandler);
 
     peer.startViewOnly();
+    //_conn?.addTransceiver('video', { direction: 'recvonly' });
 
     return () => {
       peerConnection.removeEventListener('datachannel', dataChannelHandler);
