@@ -7,7 +7,7 @@ type UserVideoProps = {
   clientId: string;
 };
 
-const UserVideo = ({ stream, clientId }: UserVideoProps) => {
+export const UserVideo = ({ stream, clientId }: UserVideoProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -30,5 +30,3 @@ const UserVideo = ({ stream, clientId }: UserVideoProps) => {
     </div>
   );
 };
-
-export default UserVideo;

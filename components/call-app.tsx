@@ -3,24 +3,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
 import { RoomEvent } from '@inlivedev/inlive-js-sdk';
-import UserVideo from './user-video';
 import { TelephoneCall, TelephoneSlash } from '@mynaui/icons-react';
 import { app, usePeer } from '@/context/peer.context';
 import { useCall } from '@/context/call.context';
+import { UserVideo } from './user-video';
 
 type Join = {
   hasJoined: boolean;
   firstTime: boolean;
 };
 
-type UserVideo = {
+type UserVideoType = {
   stream: MediaStream;
   clientId: string;
 };
 
 export const CallApp = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [userVideos, setUserVideos] = useState<UserVideo[]>([]);
+  const [userVideos, setUserVideos] = useState<UserVideoType[]>([]);
   const [joined, setJoined] = useState<Join>({
     hasJoined: false,
     firstTime: true,

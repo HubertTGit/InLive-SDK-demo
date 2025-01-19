@@ -1,15 +1,23 @@
 'use client';
 import { useMultimedia } from '@/context/multimedia.context';
-import { usePeer } from '@/context/peer.context';
-import { useEffect, useRef, useState } from 'react';
+import { app, usePeer } from '@/context/peer.context';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Application } from 'pixi.js';
 import { pixijsStuff } from '@/lib/utils';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
+import { RoomEvent } from '@inlivedev/inlive-js-sdk';
+import { UserVideo } from './user-video';
+
+type UserVideoType = {
+  stream: MediaStream;
+  clientId: string;
+};
 
 export const Multimedia = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [media, setMedia] = useState<MediaStream | null>(null);
+  const [userVideos, setUserVideos] = useState<UserVideoType[]>([]);
   const [msg, setMsg] = useState<string>('');
   const { roomId } = usePeer();
   const { messages, sendMessages, join, leave, peer } = useMultimedia();
@@ -26,16 +34,55 @@ export const Multimedia = () => {
     }, 100);
   }, []);
 
+  useEffect(() => {
+    //listen for stream available event
+    app.on(RoomEvent.STREAM_AVAILABLE, (data) => {
+      //only show remote streams ignore local streams
+      if (data.stream.origin === 'local') return;
+
+      const { mediaStream, clientId } = data.stream;
+
+      console.log('stream available', clientId);
+
+      setUserVideos((prev) => [...prev, { stream: mediaStream, clientId }]);
+    });
+
+    //listen for stream removed event
+    app.on(RoomEvent.STREAM_REMOVED, ({ stream }) => {
+      setUserVideos((prev) =>
+        prev.filter((prevStream) => prevStream.stream.id !== stream.id)
+      );
+    });
+  }, []);
+
+  const joinHandler = useCallback(async () => {
+    if (!media) return;
+    await join(media);
+  }, [media, join]);
+
   return (
-    <>
+    <div className="p-3">
       <div className="flex gap-3">
-        <h1>Join: #{roomId}</h1> <Button>Join</Button>
+        <h1>Join: #{roomId}</h1>
+        {!peer ? (
+          <Button onClick={joinHandler}>Join</Button>
+        ) : (
+          <Button variant="destructive" onClick={leave}>
+            Leave
+          </Button>
+        )}
       </div>
       <div>
         <div
           ref={containerRef}
           style={{ height: '500px', width: '500px' }}
         ></div>
+
+        <div className="flex gap-3">
+          {userVideos.map((data) => (
+            <UserVideo key={data.clientId} {...data} />
+          ))}
+        </div>
       </div>
 
       <div>
@@ -58,6 +105,6 @@ export const Multimedia = () => {
           ))}
         </ul>
       </div>
-    </>
+    </div>
   );
 };

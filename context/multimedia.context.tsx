@@ -45,7 +45,7 @@ export const MultimediaProvider = ({ children }: MultimediaProviderProps) => {
 
   const addDataChannelHandler = useCallback(async () => {
     if (!roomId) return;
-    const created = await app.createDataChannel(roomId, 'chat');
+    const created = await app.createDataChannel(roomId, 'story');
 
     if (created.ok) {
       console.log('data channel created');
@@ -116,6 +116,8 @@ export const MultimediaProvider = ({ children }: MultimediaProviderProps) => {
     if (!peerConnection) return;
 
     peerConnection.addEventListener('datachannel', dataChannelHandler);
+
+    peer.startViewOnly();
 
     return () => {
       peerConnection.removeEventListener('datachannel', dataChannelHandler);
