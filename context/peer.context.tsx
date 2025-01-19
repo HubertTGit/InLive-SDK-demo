@@ -82,6 +82,7 @@ export const PeerAppProvider = ({
   const [clientName, setClientName] = useState<string>('');
 
   useEffect(() => {
+    console.log('peer app provider', id);
     if (!id) return;
 
     const createClientHandler = async (roomId: string) => {
