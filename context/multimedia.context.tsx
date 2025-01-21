@@ -84,11 +84,13 @@ export const MultimediaProvider = ({ children }: MultimediaProviderProps) => {
     [roomId, clientId, clientName, addDataChannelHandler]
   );
 
-  const leave = useCallback(() => {
-    if (!peer) return;
-    peer.disconnect();
+  const leave = useCallback(async () => {
+    if (!roomId && !clientId) return;
+    await app.leaveRoom(roomId, clientId);
+    peer?.disconnect();
+
     setPeer(null);
-  }, [peer]);
+  }, [roomId, clientId, peer]);
 
   const sendMessages = useCallback(
     (message: string) => {
