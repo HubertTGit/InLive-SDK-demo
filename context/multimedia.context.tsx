@@ -76,12 +76,14 @@ export const MultimediaProvider = ({ children }: MultimediaProviderProps) => {
           source: 'media',
           mediaStream: media,
         });
+
+        await addDataChannelHandler();
       }
 
       await peer.connect(roomId, clientId);
       setPeer(peer);
     },
-    [roomId, clientId, clientName]
+    [roomId, clientId, clientName, addDataChannelHandler]
   );
 
   const leave = useCallback(() => {
@@ -119,25 +121,17 @@ export const MultimediaProvider = ({ children }: MultimediaProviderProps) => {
 
   useEffect(() => {
     if (!peer) return;
+
     const peerConnection = peer.getPeerConnection();
 
     if (!peerConnection) return;
 
-    const _conn = peer.getPeerConnection();
-
     peerConnection.addEventListener('datachannel', dataChannelHandler);
-
-    peer.startViewOnly();
-    //_conn?.addTransceiver('video', { direction: 'recvonly' });
 
     return () => {
       peerConnection.removeEventListener('datachannel', dataChannelHandler);
     };
   }, [peer, dataChannelHandler]);
-
-  useEffect(() => {
-    addDataChannelHandler();
-  }, [addDataChannelHandler]);
 
   return (
     <MultiMediaContext.Provider
