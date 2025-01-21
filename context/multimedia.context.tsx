@@ -68,7 +68,7 @@ export const MultimediaProvider = ({ children }: MultimediaProviderProps) => {
       if (graphic) {
         media.removeTrack(media.getVideoTracks()[0]);
         media.addTrack(graphic.getVideoTracks()[0]);
-
+        await addDataChannelHandler();
         peer.addStream(media.id, {
           clientId,
           name: clientName,
@@ -76,8 +76,6 @@ export const MultimediaProvider = ({ children }: MultimediaProviderProps) => {
           source: 'media',
           mediaStream: media,
         });
-
-        await addDataChannelHandler();
       }
 
       await peer.connect(roomId, clientId);
